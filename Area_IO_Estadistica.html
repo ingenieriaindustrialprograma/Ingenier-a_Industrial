@@ -416,29 +416,22 @@ function rgba(hex, a) {
         var ch = (typeof Chart !== 'undefined') && Chart.getChart(cv);
         if (!ch) { hide(); return; }
 
-        /* Posición del cursor relativa al canvas en píxeles CSS */
-        var rect = cv.getBoundingClientRect();
-        var cx = e.clientX - rect.left;
-        var cy = e.clientY - rect.top;
-
-        /* Pasar un objeto con .native + .x/.y; Chart.js v4 devuelve {x,y}
-           directamente cuando 'native' está presente, sin recalcular escala. */
-        var fake = { native: e, x: cx, y: cy };
         var els = [];
         try {
-          els = ch.getElementsAtEventForMode(fake, 'nearest', { intersect: false }, false);
+          els = ch.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
         } catch (_) {}
 
         if (!els.length) { hide(); return; }
-        var lines = getLines(els[0].index, els[0].datasetIndex);
+        var hit = els[0];
+        var labels = (ch.data && ch.data.labels) || [];
+        if (hit.index == null || hit.index < 0 || hit.index >= labels.length) { hide(); return; }
+
+        var lines = getLines(hit.index, hit.datasetIndex || 0);
         if (!lines || !lines.length) { hide(); return; }
         show(lines, e.clientX, e.clientY);
       });
 
       cv.addEventListener('mouseleave', hide);
-      cv.addEventListener('mousemove', function (e) {
-        if (parseFloat(el.style.opacity) > 0) reposition(e.clientX, e.clientY);
-      });
     }
     poll();
   }
