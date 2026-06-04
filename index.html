@@ -622,6 +622,7 @@ function rank(){
   document.getElementById('rank-count').textContent=rankArr.length+' universidades';
   if(rankChart){rankChart.destroy();rankChart=null;}
   document.getElementById('rank-box').innerHTML='<canvas id="rank"></canvas>';
+  requestAnimationFrame(function(){
   rankChart=new Chart(document.getElementById('rank'),{type:'bar',
     data:{labels:rankArr.map(u=>u.nombre),datasets:[{data:rankArr.map(u=>u.creditos),borderRadius:5,borderSkipped:false,
       backgroundColor:rankArr.map(u=>u.esUTP?UTPC.gold:UTPC.navy),
@@ -640,7 +641,8 @@ function rank(){
     '🏫 '+clasif(u),
     '📍 '+(u.ciudad||u.region),
     'vs promedio nacional: '+sgn(u.creditos-G.general.creditos)+' créditos'];
-});
+  });
+  });
 }
 
 /* ---------- AREAS ---------- */
