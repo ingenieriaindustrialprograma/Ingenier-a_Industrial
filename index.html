@@ -620,27 +620,41 @@ function rankData(){
 function rank(){
   rankArr=rankData();
   document.getElementById('rank-count').textContent=rankArr.length+' universidades';
-  if(rankChart){rankChart.destroy();rankChart=null;}
+  /* Canvas limpio cada vez: evita estado residual de Chart.js entre filtros */
+  const box=document.getElementById('rank-box');
+  box.innerHTML='<canvas id="rank"></canvas>';
   const cv=document.getElementById('rank');
-  cv.style.height=(document.getElementById('rank-box').offsetHeight||920)+'px';
-  rankChart=new Chart(cv,{type:'bar',
-    data:{labels:rankArr.map(u=>u.nombre),datasets:[{data:rankArr.map(u=>u.creditos),borderRadius:5,borderSkipped:false,
+  cv.width=box.clientWidth||800;
+  cv.height=box.clientHeight||920;
+  rankChart=new Chart(cv,{
+    type:'bar',
+    data:{labels:rankArr.map(u=>u.nombre),datasets:[{
+      data:rankArr.map(u=>u.creditos),
+      borderRadius:5,borderSkipped:false,
       backgroundColor:rankArr.map(u=>u.esUTP?UTPC.gold:UTPC.navy),
-      hoverBackgroundColor:rankArr.map(u=>u.esUTP?UTPC.gold2:UTPC.blue)}]},
-    options:{...BASE,indexAxis:'y',plugins:{legend:{display:false},...noTT},
-      scales:{x:{beginAtZero:false,suggestedMin:125,grid:{color:'#eef2f7'},title:{display:true,text:'Créditos'}},
-        y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+      hoverBackgroundColor:rankArr.map(u=>u.esUTP?UTPC.gold2:UTPC.blue)
+    }]},
+    options:{
+      responsive:false,animation:false,
+      indexAxis:'y',
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{
+        x:{beginAtZero:false,suggestedMin:125,grid:{color:'#eef2f7'},title:{display:true,text:'Créditos'}},
+        y:{grid:{display:false},ticks:{font:{size:10}}}
+      }
+    }
+  });
+  TT.attach('rank',function(i){
+    const u=rankArr[i]; if(!u)return null;
+    return [u.nombre+(u.esUTP?' ⭐':''),
+      '📊 Créditos del plan: '+u.creditos,
+      '📅 Semestres: '+(u.semestres??'n/d'),
+      '🏅 Puesto en la selección: #'+(i+1)+' de '+rankArr.length,
+      '🏫 '+clasif(u),
+      '📍 '+(u.ciudad||u.region),
+      'vs promedio nacional: '+sgn(u.creditos-G.general.creditos)+' créditos'];
+  });
 }
-TT.attach('rank',function(i){
-  const u=rankArr[i]; if(!u)return null;
-  return [u.nombre+(u.esUTP?' ⭐':''),
-    '📊 Créditos del plan: '+u.creditos,
-    '📅 Semestres: '+(u.semestres??'n/d'),
-    '🏅 Puesto en la selección: #'+(i+1)+' de '+rankArr.length,
-    '🏫 '+clasif(u),
-    '📍 '+(u.ciudad||u.region),
-    'vs promedio nacional: '+sgn(u.creditos-G.general.creditos)+' créditos'];
-});
 
 /* ---------- AREAS ---------- */
 const GRUPOS=[['general','Todas'],['acreditadas','Acreditadas'],['publicas','Públicas'],['pereira','Pereira']];
