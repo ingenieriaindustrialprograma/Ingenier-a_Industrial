@@ -620,26 +620,18 @@ function rankData(){
 function rank(){
   rankArr=rankData();
   document.getElementById('rank-count').textContent=rankArr.length+' universidades';
-  const _labels=rankArr.map(u=>u.nombre);
-  const _data=rankArr.map(u=>u.creditos);
-  const _bg=rankArr.map(u=>u.esUTP?UTPC.gold:UTPC.navy);
-  const _hbg=rankArr.map(u=>u.esUTP?UTPC.gold2:UTPC.blue);
-  if(rankChart){
-    rankChart.data.labels=_labels;
-    rankChart.data.datasets[0].data=_data;
-    rankChart.data.datasets[0].backgroundColor=_bg;
-    rankChart.data.datasets[0].hoverBackgroundColor=_hbg;
-    rankChart.resize();rankChart.update("none");
-  }else{
-    rankChart=new Chart(document.getElementById('rank'),{type:'bar',
-      data:{labels:_labels,datasets:[{data:_data,borderRadius:5,borderSkipped:false,
-        backgroundColor:_bg,hoverBackgroundColor:_hbg}]},
-      options:{...BASE,indexAxis:'y',plugins:{legend:{display:false},...noTT},
-        scales:{x:{beginAtZero:false,suggestedMin:125,grid:{color:'#eef2f7'},title:{display:true,text:'Créditos'}},
-          y:{grid:{display:false},ticks:{font:{size:10}}}}}});
-  }
-}
-TT.attach('rank',function(i){
+  if(rankChart){rankChart.destroy();rankChart=null;}
+  document.getElementById('rank-box').innerHTML='<canvas id="rank"></canvas>';
+  rankChart=new Chart(document.getElementById('rank'),{type:'bar',
+    data:{labels:rankArr.map(u=>u.nombre),datasets:[{data:rankArr.map(u=>u.creditos),borderRadius:5,borderSkipped:false,
+      backgroundColor:rankArr.map(u=>u.esUTP?UTPC.gold:UTPC.navy),
+      hoverBackgroundColor:rankArr.map(u=>u.esUTP?UTPC.gold2:UTPC.blue)}]},
+    options:{...BASE,indexAxis:'y',plugins:{legend:{display:false},...noTT},
+      scales:{x:{beginAtZero:false,suggestedMin:125,grid:{color:'#eef2f7'},title:{display:true,text:'Créditos'}},
+        y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+  
+
+  TT.attach('rank',function(i){
   const u=rankArr[i]; if(!u)return null;
   return [u.nombre+(u.esUTP?' ⭐':''),
     '📊 Créditos del plan: '+u.creditos,
@@ -649,6 +641,7 @@ TT.attach('rank',function(i){
     '📍 '+(u.ciudad||u.region),
     'vs promedio nacional: '+sgn(u.creditos-G.general.creditos)+' créditos'];
 });
+}
 
 /* ---------- AREAS ---------- */
 const GRUPOS=[['general','Todas'],['acreditadas','Acreditadas'],['publicas','Públicas'],['pereira','Pereira']];
