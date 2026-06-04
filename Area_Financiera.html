@@ -518,53 +518,51 @@ function rgba(hex, a) {
   }
 
   function renderChart(rows) {
-    var _labels = rows.map(function(f){ return f.nombre; });
-    var _data = rows.map(function(f){ return +(f.pct*100).toFixed(1); });
-    var _bg = rows.map(function(f){ return f.esUTP?'#d6a23e':CFG.accent; });
-    var _hbg = rows.map(function(f){ return f.esUTP?'#c2882a':(CFG.accent2||CFG.accent); });
     var _title = 'Promedio nacional: '+pct(D.promedioPct)+(semF!=='todos'?'  ·  Filtro: '+semF+' semestres':'');
-    if(chartObj){
-      chartObj.data.labels = _labels;
-      chartObj.data.datasets[0].data = _data;
-      chartObj.data.datasets[0].backgroundColor = _bg;
-      chartObj.data.datasets[0].hoverBackgroundColor = _hbg;
-      chartObj.options.plugins.title.text = _title;
-      chartObj.resize();chartObj.update("none");
-    }else{
-      chartObj = new Chart(document.getElementById('areaChart'), {
-        type: 'bar',
-        data: {
-          labels: _labels,
-          datasets: [{ data: _data, borderRadius: 5, borderSkipped: false, backgroundColor: _bg, hoverBackgroundColor: _hbg }],
+    if(chartObj){chartObj.destroy();chartObj=null;}
+    var box = document.getElementById('area-chart-box');
+    box.innerHTML = '<canvas id="areaChart"></canvas>';
+    var cv = document.getElementById('areaChart');
+    cv.width  = box.clientWidth  || 800;
+    cv.height = box.clientHeight || 920;
+    chartObj = new Chart(cv, {
+      type: 'bar',
+      data: {
+        labels: rows.map(function(f){ return f.nombre; }),
+        datasets: [{ data: rows.map(function(f){ return +(f.pct*100).toFixed(1); }),
+          borderRadius: 5, borderSkipped: false,
+          backgroundColor:      rows.map(function(f){ return f.esUTP?'#d6a23e':CFG.accent; }),
+          hoverBackgroundColor: rows.map(function(f){ return f.esUTP?'#c2882a':(CFG.accent2||CFG.accent); }) }],
+      },
+      options: {
+        responsive: false, animation: false, indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          title:  { display: true, text: _title, color: '#64748b', font: { size: 12, weight: '600' } },
+          tooltip:{ enabled: false },
         },
-        options: {
-          responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-          plugins: {
-            legend: { display: false },
-            title: { display: true, text: _title, color: '#64748b', font: { size: 12, weight: '600' } },
-            tooltip: { enabled: false },
-          },
-          scales: { x: { beginAtZero: true, grid: { color: '#eef2f7' }, title: { display: true, text: '% del plan' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } },
-        },
-      });
-    }
+        scales: { x: { beginAtZero: true, grid: { color: '#eef2f7' }, title: { display: true, text: '% del plan' } },
+                  y: { grid: { display: false }, ticks: { font: { size: 10 } } } },
+      },
+    });
+    TT.attach('areaChart', function (i) {
+      var fr = filteredRows();
+      var f = fr[i]; if (!f) return null;
+      var navg = D.promedioPct * 100;
+      return [
+        f.nombre + (f.esUTP ? ' ⭐' : ''),
+        '📊 ' + AREA.replace('Área de Investigación de Operaciones y Estadística','IO y Estadística').replace('Área de ','').replace('Área ','').slice(0,38) + ': ' + (f.pct*100).toFixed(1) + '% del plan',
+        '📚 Créditos en el área: ' + f.creditosArea + '  ·  ' + f.numAsignaturas + ' asignaturas',
+        '🎓 Plan total: ' + f.creditosTotales + ' créditos  ·  ' + (f.semestres!=null?f.semestres+' semestres':'n/d sem'),
+        '🏅 Posición #' + (i+1) + ' de ' + fr.length + (semF!=='todos'?' (filtro '+semF+' sem)':''),
+        '🏫 ' + (f.publica?'Pública':'Privada') + (f.acreditada?' · Acreditada':'') + '  ·  ' + (f.ciudad||f.region),
+        'vs promedio nacional: ' + (f.pct*100-navg>=0?'+':'') + (f.pct*100-navg).toFixed(1) + ' pts',
+      ];
+    });
   }
 
   /* TT adjuntado UNA sola vez; lee filteredRows() en cada hover para datos vigentes */
-  TT.attach('areaChart', function (i) {
-    const rows = filteredRows();
-    const f = rows[i]; if (!f) return null;
-    const navg = D.promedioPct * 100;
-    return [
-      f.nombre + (f.esUTP ? ' ⭐' : ''),
-      '📊 ' + AREA.replace('Área de Investigación de Operaciones y Estadística', 'IO y Estadística').replace('Área de ', '').replace('Área ', '').slice(0, 38) + ': ' + (f.pct * 100).toFixed(1) + '% del plan',
-      '📚 Créditos en el área: ' + f.creditosArea + '  ·  ' + f.numAsignaturas + ' asignaturas',
-      '🎓 Plan total: ' + f.creditosTotales + ' créditos  ·  ' + (f.semestres != null ? f.semestres + ' semestres' : 'n/d sem'),
-      '🏅 Posición #' + (i + 1) + ' de ' + rows.length + (semF !== 'todos' ? ' (filtro ' + semF + ' sem)' : ''),
-      '🏫 ' + (f.publica ? 'Pública' : 'Privada') + (f.acreditada ? ' · Acreditada' : '') + '  ·  ' + (f.ciudad || f.region),
-      'vs promedio nacional: ' + (f.pct * 100 - navg >= 0 ? '+' : '') + (f.pct * 100 - navg).toFixed(1) + ' pts',
-    ];
-  });
+  
 
   function renderSubjects() {
     const conArea = filteredRows().filter((f) => f.numAsignaturas > 0);
