@@ -79,8 +79,8 @@ body{
 .tab-btn{flex:1;min-width:150px;border:none;background:transparent;padding:13px 18px;border-radius:var(--r-pill);font-family:var(--font-body);font-size:.94rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .25s var(--ease);display:flex;align-items:center;justify-content:center;gap:8px}
 .tab-btn:hover{color:var(--navy);background:var(--accent-soft)}
 .tab-btn.active{color:#fff;background:linear-gradient(135deg,var(--navy),var(--blue));box-shadow:0 8px 20px rgba(0,56,118,.28)}
-.tab-panel{display:none;animation:rise .45s var(--ease)}
-.tab-panel.active{display:block}
+.tab-panel{display:block;height:0;overflow:hidden;visibility:hidden;pointer-events:none}
+.tab-panel.active{display:block;height:auto;overflow:visible;visibility:visible;pointer-events:auto;animation:rise .45s var(--ease)}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
 /* ---------- Cards ---------- */
@@ -629,7 +629,7 @@ function rank(){
     rankChart.data.datasets[0].data=_data;
     rankChart.data.datasets[0].backgroundColor=_bg;
     rankChart.data.datasets[0].hoverBackgroundColor=_hbg;
-    rankChart.update();
+    rankChart.resize();rankChart.update("none");
   }else{
     rankChart=new Chart(document.getElementById('rank'),{type:'bar',
       data:{labels:_labels,datasets:[{data:_data,borderRadius:5,borderSkipped:false,
@@ -664,7 +664,7 @@ function radar(){
     radarChart.data.datasets[0].data=_d0;
     radarChart.data.datasets[1].data=_d1;
     radarChart.data.datasets[1].label=_lbl;
-    radarChart.update();
+    radarChart.resize();radarChart.update("none");
   }else{
     radarChart=new Chart(document.getElementById('radar'),{type:'radar',
       data:{labels:AREAS.map(shortArea),datasets:[
@@ -715,7 +715,7 @@ function areaAll(){
     areaAllChart.data.datasets[0].backgroundColor=_bg;
     areaAllChart.data.datasets[0].hoverBackgroundColor=_hbg;
     areaAllChart.options.plugins.title.text=_title;
-    areaAllChart.update();
+    areaAllChart.resize();areaAllChart.update("none");
   }else{
     areaAllChart=new Chart(document.getElementById('areaAll'),{type:'bar',
       data:{labels:_labels,datasets:[{data:_data,borderRadius:5,borderSkipped:false,

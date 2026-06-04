@@ -529,7 +529,7 @@ function rgba(hex, a) {
       chartObj.data.datasets[0].backgroundColor = _bg;
       chartObj.data.datasets[0].hoverBackgroundColor = _hbg;
       chartObj.options.plugins.title.text = _title;
-      chartObj.update();
+      chartObj.resize();chartObj.update("none");
     }else{
       chartObj = new Chart(document.getElementById('areaChart'), {
         type: 'bar',
